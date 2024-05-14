@@ -49,10 +49,38 @@ const TourUser = () => {
 
     const buttonOne = useRef<HTMLButtonElement>(null);
     const buttonTwo = useRef<HTMLButtonElement>(null);
-
+    console.log(ctx);
     useEffect(() => {
-        ctx.nodes.push(buttonOne.current as HTMLElement);
-        ctx.nodes.push(buttonTwo.current as HTMLElement);
+        ctx.nodes.set('button1', {
+            ref: buttonOne.current as HTMLElement,
+            render: (
+                <Card>
+                    <CardTitle>
+                        {ctx.current == 1 ? '???' : 'Node Drawer'}
+                    </CardTitle>
+                    <CardContent>helpful content</CardContent>
+                    <CardFooter>
+                        <Button onClick={() => ctx.previous()}>previous</Button>
+                        <Button onClick={() => ctx.next()}>next</Button>
+                    </CardFooter>
+                </Card>
+            ),
+        });
+        ctx.nodes.set('button2', {
+            ref: buttonTwo.current as HTMLElement,
+            render: (
+                <Card>
+                    <CardTitle>
+                        {ctx.current == 1 ? '???' : 'Node Drawer'}
+                    </CardTitle>
+                    <CardContent>helpful content</CardContent>
+                    <CardFooter>
+                        <Button onClick={() => ctx.previous()}>previous</Button>
+                        <Button onClick={() => ctx.next()}>next</Button>
+                    </CardFooter>
+                </Card>
+            ),
+        });
     }, []);
 
     return (
@@ -65,9 +93,7 @@ const TourUser = () => {
                     Node Drawer
                 </Button>
                 <Button ref={buttonTwo}>???</Button>
-                <Button onClick={() => ctx.setVisibility(!ctx.show)}>
-                    Tour
-                </Button>
+                <Button onClick={() => ctx.open()}>Tour</Button>
             </div>
         </>
     );

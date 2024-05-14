@@ -15,13 +15,25 @@ import { Button } from './ui/button';
 import { Card, CardTitle, CardContent, CardFooter } from './ui/card';
 
 export const tourContext = createContext({
-    nodes: [] as HTMLElement[],
+    nodes: new Map<
+        string,
+        {
+            ref: HTMLElement;
+            render: React.ReactNode;
+        }
+    >(),
     show: false,
     current: 0,
-    setCurrent: (number: number) => {
+    next: () => {
         console.log('empty');
     },
-    setVisibility: (visible: boolean) => {
+    previous: () => {
+        console.log('empty');
+    },
+    close: () => {
+        console.log('empty');
+    },
+    open: () => {
         console.log('empty');
     },
     // addNode: (order: number, node: HTMLElement) => {
@@ -36,7 +48,12 @@ export const TourPortal = () => {
     const ref = useRef<HTMLDivElement>(null);
     const [, updateState] = React.useState({});
 
-    const currentElement = useMemo(() => ctx.nodes[ctx.current], [ctx]);
+    const keys = Array.from(ctx.nodes.keys());
+
+    const currentElement = useMemo(
+        () => ctx.nodes.get(keys[ctx.current] ?? ''),
+        [ctx]
+    );
 
     useEffect(() => {
         const handleResize = () => {
@@ -53,8 +70,9 @@ export const TourPortal = () => {
     if (!currentElement) {
         return <></>;
     }
+    console.log(ctx.current);
 
-    const currentElementRect = currentElement.getBoundingClientRect();
+    const currentElementRect = currentElement.ref.getBoundingClientRect();
 
     return createPortal(
         <div
@@ -74,21 +92,7 @@ export const TourPortal = () => {
                         (ref.current?.getBoundingClientRect()?.height ?? 0),
                 }}
             >
-                <Card>
-                    <CardTitle>
-                        {ctx.current == 1 ? '???' : 'Node Drawer'}
-                    </CardTitle>
-                    <CardContent>helpful content</CardContent>
-                    <CardFooter>
-                        <Button
-                            onClick={() =>
-                                ctx.setCurrent(ctx.current == 1 ? 0 : 1)
-                            }
-                        >
-                            swap
-                        </Button>
-                    </CardFooter>
-                </Card>
+                {currentElement.render}
             </div>
             <div
                 className={`overflow-hidden opacity-80 w-screen h-screen absolute z-40 shadow-fill transition-all ease-in-out duration-500`}
@@ -109,7 +113,15 @@ export type TourProps = {
 };
 
 export const TourProvider = (props: TourProps) => {
-    const nodes = useRef<HTMLElement[]>([]);
+    const nodes = useRef(
+        new Map<
+            string,
+            {
+                ref: HTMLElement;
+                render: React.ReactNode;
+            }
+        >()
+    );
     // const [nodes, setNodes] = useState(
     //     new Map() as ReturnType<typeof useTourContext>['nodes']
     // );
@@ -122,9 +134,19 @@ export const TourProvider = (props: TourProps) => {
                 nodes: nodes.current,
                 current,
                 show,
-                setCurrent: (index: number) => setCurrent(index),
-                setVisibility: visible => {
-                    setShow(visible);
+                next: () => {
+                    setCurrent(state =>
+                        Math.min(state + 1, nodes.current.size - 1)
+                    );
+                },
+                previous: () => {
+                    setCurrent(state => Math.max(state - 1, 0));
+                },
+                close: () => {
+                    setShow(false);
+                },
+                open: () => {
+                    setShow(true);
                 },
             }}
         >
