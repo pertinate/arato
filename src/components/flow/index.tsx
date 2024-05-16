@@ -34,7 +34,7 @@ import {
 } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { createPortal } from 'react-dom';
-import { TourProvider, useTourContext } from '../tour';
+import tour, { TourFocus, TourProvider, useTourContext } from '../tour';
 
 const fitViewOptions: FitViewOptions = {
     padding: 0.2,
@@ -45,54 +45,49 @@ const defaultEdgeOptions: DefaultEdgeOptions = {
 };
 
 const TourUser = () => {
-    const ctx = useTourContext();
-
-    const buttonOne = useRef<HTMLButtonElement>(null);
-    const buttonTwo = useRef<HTMLButtonElement>(null);
-    console.log(ctx);
-    useEffect(() => {
-        ctx.nodes.set('button1', {
-            ref: buttonOne.current as HTMLElement,
-            render: (
-                <Card>
-                    <CardTitle>
-                        {ctx.current == 1 ? '???' : 'Node Drawer'}
-                    </CardTitle>
-                    <CardContent>helpful content</CardContent>
-                    <CardFooter>
-                        <Button onClick={() => ctx.previous()}>previous</Button>
-                        <Button onClick={() => ctx.next()}>next</Button>
-                    </CardFooter>
-                </Card>
-            ),
-        });
-        ctx.nodes.set('button2', {
-            ref: buttonTwo.current as HTMLElement,
-            render: (
-                <Card>
-                    <CardTitle>
-                        {ctx.current == 1 ? '???' : 'Node Drawer'}
-                    </CardTitle>
-                    <CardContent>helpful content</CardContent>
-                    <CardFooter>
-                        <Button onClick={() => ctx.previous()}>previous</Button>
-                        <Button onClick={() => ctx.next()}>next</Button>
-                    </CardFooter>
-                </Card>
-            ),
-        });
-    }, []);
-
+    const ctx = tour.useContext();
+    console.log(ctx.show);
     return (
         <>
             <div className='flex gap-2'>
-                <Button
-                    // onClick={() => enableNodeDrawer(state => !state)}
-                    ref={buttonOne}
+                <tour.TourFocus
+                    name='buttonOne'
+                    tourRender={idx => (
+                        <Card>
+                            <CardTitle>Node Drawer</CardTitle>
+                            <CardContent>helpful content</CardContent>
+                            <CardFooter>
+                                <Button onClick={() => ctx.previous()}>
+                                    previous
+                                </Button>
+                                <Button onClick={() => ctx.next()}>next</Button>
+                            </CardFooter>
+                        </Card>
+                    )}
                 >
-                    Node Drawer
-                </Button>
-                <Button ref={buttonTwo}>???</Button>
+                    <Button
+                    // onClick={() => enableNodeDrawer(state => !state)}
+                    >
+                        Node Drawer
+                    </Button>
+                </tour.TourFocus>
+                <tour.TourFocus
+                    name='buttonTwo'
+                    tourRender={idx => (
+                        <Card>
+                            <CardTitle>???</CardTitle>
+                            <CardContent>helpful content</CardContent>
+                            <CardFooter>
+                                <Button onClick={() => ctx.previous()}>
+                                    previous
+                                </Button>
+                                <Button onClick={() => ctx.next()}>next</Button>
+                            </CardFooter>
+                        </Card>
+                    )}
+                >
+                    <Button>???</Button>
+                </tour.TourFocus>
                 <Button onClick={() => ctx.open()}>Tour</Button>
             </div>
         </>
@@ -271,9 +266,10 @@ function Flow() {
                     </Card>
                 </div>
             </ReactFlow>
-            <TourProvider>
+            <tour.TourProvider>
                 <TourUser />
-            </TourProvider>
+                <tour.TourPortal />
+            </tour.TourProvider>
         </div>
     );
 }
