@@ -1,4 +1,10 @@
-import { useCallback, type ReactNode } from 'react';
+import {
+    ComponentProps,
+    HTMLAttributes,
+    HTMLProps,
+    useCallback,
+    type ReactNode,
+} from 'react';
 import {
     Handle,
     type NodeProps,
@@ -23,6 +29,7 @@ type NodeData = {
     children: ReactNode;
     target: boolean;
     source: boolean;
+    cardClassName?: ComponentProps<'div'>['className'];
 };
 
 const handleStyle = { left: 0, top: '50%' };
@@ -72,15 +79,17 @@ const RenderNode = ({ data, id }: NodeProps<NodeData>) => {
 
     return (
         <>
-            <Handle
-                type='target'
-                position={Position.Left}
-                className={cn(!data.target && 'hidden')}
-            />
+            <div className='flex flex-col'>
+                <Handle
+                    type='target'
+                    position={Position.Left}
+                    className={cn(!data.target && 'hidden')}
+                />
+            </div>
 
             <ContextMenu>
                 <ContextMenuTrigger>
-                    <Card className='rounded-sm'>{data.children}</Card>
+                    <Card className='rounded-sm w-max'>{data.children}</Card>
                 </ContextMenuTrigger>
                 <ContextMenuContent>
                     <ContextMenuLabel>Node Controls</ContextMenuLabel>

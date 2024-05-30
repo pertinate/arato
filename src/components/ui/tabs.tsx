@@ -23,17 +23,22 @@ Tabs.displayName = TabsPrimitive.List.displayName;
 
 const TabsList = React.forwardRef<
     React.ElementRef<typeof TabsPrimitive.List>,
-    React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-    <TabsPrimitive.List
-        ref={ref}
-        className={cn(
-            'inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground',
-            className
-        )}
-        {...props}
-    />
-));
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
+        'data-orientation': 'vertical' | 'horizontal' | undefined;
+    }
+>(({ className, ...props }, ref) => {
+    return (
+        <TabsPrimitive.List
+            ref={ref}
+            className={cn(
+                'inline-flex items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground',
+                className,
+                props['data-orientation'] == 'horizontal' ? 'h-9' : 'flex-col'
+            )}
+            {...props}
+        />
+    );
+});
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const TabsTrigger = React.forwardRef<

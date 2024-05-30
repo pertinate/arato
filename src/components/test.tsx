@@ -58,6 +58,68 @@ export const TourFactory = <T extends string>(order: T[]) => {
         // },
     });
 
+    function TourPortal() {
+        const ctx = useContext(tourContext);
+
+        const ref = useRef<HTMLDivElement>(null);
+        const [, updateState] = React.useState({});
+
+        const currentElement = useMemo(
+            () => ctx.nodes.get(order[ctx.current] ?? ''),
+            [ctx]
+        );
+
+        useEffect(() => {
+            const handleResize = () => {
+                updateState({});
+            };
+
+            window.addEventListener('resize', handleResize);
+
+            return () => {
+                window.removeEventListener('resize', handleResize);
+            };
+        }, []);
+
+        if (!currentElement) {
+            return <></>;
+        }
+
+        const currentElementRect = currentElement.ref.getBoundingClientRect();
+        return createPortal(
+            <div
+                id='tour'
+                className={cn(
+                    'pointer-events-auto w-screen h-screen fixed top-0 left-0',
+                    !ctx.show ? 'invisible' : 'visible'
+                )}
+            >
+                <div
+                    ref={ref}
+                    className='absolute -top-8 z-50 transition-all ease-in-out duration-500'
+                    style={{
+                        left: currentElementRect.x,
+                        top:
+                            currentElementRect.y -
+                            (ref.current?.getBoundingClientRect()?.height ?? 0),
+                    }}
+                >
+                    {currentElement.render(ctx.current)}
+                </div>
+                <div
+                    className={`overflow-hidden opacity-80 w-screen h-screen absolute z-40 shadow-[0_0_0_100vw_rgba(0,0,0,.99)] transition-all ease-in-out duration-500`}
+                    style={{
+                        height: currentElementRect.height,
+                        width: currentElementRect.width,
+                        left: currentElementRect.x,
+                        top: currentElementRect.y,
+                    }}
+                />
+            </div>,
+            document.body
+        );
+    }
+
     return {
         TourProvider: function TourProvider(props: TourProps) {
             const nodes = useRef<Context<T>['nodes']>(new Map());
@@ -88,74 +150,12 @@ export const TourFactory = <T extends string>(order: T[]) => {
                     }}
                 >
                     {props.children}
+                    <TourPortal />
                 </tourContext.Provider>
             );
         },
         context: tourContext,
         useContext: () => useContext(tourContext),
-        TourPortal: function TourPortal() {
-            const ctx = useContext(tourContext);
-
-            const ref = useRef<HTMLDivElement>(null);
-            const [, updateState] = React.useState({});
-
-            const currentElement = useMemo(
-                () => ctx.nodes.get(order[ctx.current] ?? ''),
-                [ctx]
-            );
-
-            useEffect(() => {
-                const handleResize = () => {
-                    updateState({});
-                };
-
-                window.addEventListener('resize', handleResize);
-
-                return () => {
-                    window.removeEventListener('resize', handleResize);
-                };
-            }, []);
-
-            if (!currentElement) {
-                return <></>;
-            }
-
-            const currentElementRect =
-                currentElement.ref.getBoundingClientRect();
-            return createPortal(
-                <div
-                    id='tour'
-                    className={cn(
-                        'pointer-events-auto w-screen h-screen fixed top-0 left-0',
-                        !ctx.show ? 'invisible' : 'visible'
-                    )}
-                >
-                    <div
-                        ref={ref}
-                        className='absolute -top-8 z-50 transition-all ease-in-out duration-500'
-                        style={{
-                            left: currentElementRect.x,
-                            top:
-                                currentElementRect.y -
-                                (ref.current?.getBoundingClientRect()?.height ??
-                                    0),
-                        }}
-                    >
-                        {currentElement.render(ctx.current)}
-                    </div>
-                    <div
-                        className={`overflow-hidden opacity-80 w-screen h-screen absolute z-40 shadow-fill transition-all ease-in-out duration-500`}
-                        style={{
-                            height: currentElementRect.height,
-                            width: currentElementRect.width,
-                            left: currentElementRect.x,
-                            top: currentElementRect.y,
-                        }}
-                    />
-                </div>,
-                document.body
-            );
-        },
         TourFocus: function TourFocus(props: TourFocusProps<T>) {
             const ctx = useContext(tourContext);
             return (
