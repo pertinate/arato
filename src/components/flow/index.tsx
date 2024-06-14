@@ -1,7 +1,6 @@
 'use client';
 
 import ReactFlow, {
-    Controls,
     Background,
     applyNodeChanges,
     applyEdgeChanges,
@@ -15,34 +14,18 @@ import ReactFlow, {
     type DefaultEdgeOptions,
     type NodeTypes,
     ConnectionLineType,
-    NodeChange,
-    OnInit,
-    ReactFlowInstance,
+    type NodeChange,
+    type ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Button } from '../ui/button';
-import {
-    DragEventHandler,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import { type DragEventHandler, useCallback, useMemo, useState } from 'react';
 import CustomNode from './customNode';
 import RenderNode from './render';
 import InputNode from './inputNode';
 import OutputNode from './outputNode';
 import { Label } from '../ui/label';
 import { cn } from '~/lib/utils';
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '../ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { useDebouncedState, useHotkeys } from '@mantine/hooks';
 import NodeDrawer from './nodeDrawer';
 

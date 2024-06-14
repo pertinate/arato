@@ -1,7 +1,6 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import RenderNode from './render';
-import { NodeProps, getRectOfNodes, useStore } from 'reactflow';
-import { cx } from 'class-variance-authority';
+import { type NodeProps, getRectOfNodes, useStore } from 'reactflow';
 import { cn } from '~/lib/utils';
 
 type NodeData = {
