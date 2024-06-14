@@ -16,10 +16,19 @@ import ReactFlow, {
     type NodeTypes,
     ConnectionLineType,
     NodeChange,
+    OnInit,
+    ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Button } from '../ui/button';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    DragEventHandler,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import CustomNode from './customNode';
 import RenderNode from './render';
 import InputNode from './inputNode';
@@ -35,6 +44,7 @@ import {
 } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { useDebouncedState, useHotkeys } from '@mantine/hooks';
+import NodeDrawer from './nodeDrawer';
 
 const fitViewOptions: FitViewOptions = {
     padding: 0.2,
@@ -43,6 +53,9 @@ const fitViewOptions: FitViewOptions = {
 const defaultEdgeOptions: DefaultEdgeOptions = {
     animated: true,
 };
+
+let id = 0;
+const getId = () => `dndnode_${id++}`;
 
 function Flow() {
     const [showNodeDrawer, enableNodeDrawer] = useState(false);
@@ -122,6 +135,46 @@ function Flow() {
 
     const [undoNodeHistory, setUndoNodeHistory] = useState<NodeChange[][]>([]);
     const [redoNodeHistory, setRedoNodeHistory] = useState<NodeChange[][]>([]);
+    const [reactFlowInstance, setReactFlowInstance] =
+        useState<ReactFlowInstance<any, any> | null>(null);
+
+    const onDragOver = useCallback<DragEventHandler<HTMLDivElement>>(event => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }, []);
+
+    const onDrop = useCallback<DragEventHandler<HTMLDivElement>>(
+        event => {
+            event.preventDefault();
+
+            const type = event.dataTransfer.getData('application/reactflow');
+
+            // check if the dropped element is valid
+            if (typeof type === 'undefined' || !type) {
+                return;
+            }
+
+            // reactFlowInstance.project was renamed to reactFlowInstance.screenToFlowPosition
+            // and you don't need to subtract the reactFlowBounds.left/top anymore
+            // details: https://reactflow.dev/whats-new/2023-11-10
+            const position = reactFlowInstance?.screenToFlowPosition({
+                x: event.clientX,
+                y: event.clientY,
+            });
+
+            if (!position) return;
+
+            const newNode: Node = {
+                id: getId(),
+                type,
+                position,
+                data: { label: `${type} node` },
+            };
+
+            setNodes(nds => nds.concat(newNode));
+        },
+        [reactFlowInstance]
+    );
 
     const onNodesChange: OnNodesChange = useCallback(
         changes => {
@@ -250,6 +303,9 @@ function Flow() {
                 fitViewOptions={fitViewOptions}
                 defaultEdgeOptions={defaultEdgeOptions}
                 connectionLineType={ConnectionLineType.SimpleBezier}
+                onInit={setReactFlowInstance}
+                onDrop={onDrop}
+                onDragOver={onDragOver}
                 nodeTypes={nodeTypes}
                 proOptions={{
                     hideAttribution: true,
@@ -263,27 +319,7 @@ function Flow() {
                         showNodeDrawer ? '-translate-y-4' : 'translate-y-full'
                     )}
                 >
-                    <Card className={cn('rounded-sm w-full p-2 z-50 h-full')}>
-                        <CardHeader className='pb-2'>
-                            <CardTitle>Node Drawer</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Tabs
-                                orientation='vertical'
-                                defaultValue='default'
-                                className='flex gap-2'
-                            >
-                                <TabsList data-orientation='vertical'>
-                                    <TabsTrigger value='default'>
-                                        Default
-                                    </TabsTrigger>
-                                    <TabsTrigger value='test'>test</TabsTrigger>
-                                    <TabsTrigger value='reee'>reee</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value='default'>Input</TabsContent>
-                            </Tabs>
-                        </CardContent>
-                    </Card>
+                    <NodeDrawer />
                 </div>
             </ReactFlow>
             <div className='flex gap-2'>
